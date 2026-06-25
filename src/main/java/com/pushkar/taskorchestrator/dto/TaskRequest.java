@@ -1,6 +1,8 @@
 package com.pushkar.taskorchestrator.dto;
 
+import com.pushkar.taskorchestrator.entity.TaskType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,8 +13,8 @@ public class TaskRequest {
     @NotBlank(message = "Task name is required")
     private String taskName;
 
-    @NotBlank(message = "Task type is required")
-    private String taskType;
+    @NotNull(message = "Task type is required")
+    private TaskType taskType;
 
     private String payload;
 }

@@ -20,7 +20,8 @@ public class Task {
 
     private String taskName;
 
-    private String taskType;
+    @Enumerated(EnumType.STRING)
+    private TaskType taskType;
 
     @Enumerated(EnumType.STRING)
     private TaskStatus status;

@@ -4,6 +4,8 @@ import com.pushkar.taskorchestrator.dto.TaskRequest;
 import com.pushkar.taskorchestrator.entity.Task;
 import com.pushkar.taskorchestrator.entity.TaskStatus;
 import com.pushkar.taskorchestrator.repository.TaskRepository;
+import com.pushkar.taskorchestrator.taskhandler.TaskHandler;
+import com.pushkar.taskorchestrator.taskhandler.TaskHandlerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final ExecutorService executorService;
+    private final TaskHandlerFactory taskHandlerFactory;
 
     public Task createTask(TaskRequest request) {
         Task task = Task.builder()
@@ -30,7 +33,6 @@ public class TaskService {
 
         Task savedTask = taskRepository.save(task);
 
-        // Run asynchronously using virtual thread
         executorService.submit(() -> executeTask(savedTask.getId()));
 
         return savedTask;
@@ -45,10 +47,8 @@ public class TaskService {
             task.setStartedAt(LocalDateTime.now());
             taskRepository.save(task);
 
-            // Simulate actual work
-            Thread.sleep(5000);
-
-            String output = "Task executed successfully for taskType: " + task.getTaskType();
+            TaskHandler handler = taskHandlerFactory.getHandler(task.getTaskType());
+            String output = handler.handle(task);
 
             task.setResult(output);
             task.setStatus(TaskStatus.SUCCESS);
