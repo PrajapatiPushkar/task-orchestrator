@@ -3,10 +3,12 @@ package com.pushkar.taskorchestrator.service;
 import com.pushkar.taskorchestrator.dto.TaskRequest;
 import com.pushkar.taskorchestrator.entity.Task;
 import com.pushkar.taskorchestrator.entity.TaskStatus;
+import com.pushkar.taskorchestrator.exception.ResourceNotFoundException;
 import com.pushkar.taskorchestrator.repository.TaskRepository;
 import com.pushkar.taskorchestrator.taskhandler.TaskHandler;
 import com.pushkar.taskorchestrator.taskhandler.TaskHandlerFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TaskService {
 
     private static final int MAX_RETRY_COUNT = 3;
@@ -42,7 +45,8 @@ public class TaskService {
 
     public void executeTask(Long taskId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Task not found with id: " + taskId));
 
         try {
             task.setStatus(TaskStatus.RUNNING);
@@ -68,7 +72,8 @@ public class TaskService {
 
     public Task retryTask(Long taskId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Task not found with id: " + taskId));
 
         if (task.getStatus() != TaskStatus.FAILED) {
             throw new RuntimeException("Only FAILED tasks can be retried.");
@@ -94,7 +99,8 @@ public class TaskService {
 
     public Task getTaskById(Long id) {
         return taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Task not found with id: " + id));
     }
 
     public List<Task> getAllTasks() {
