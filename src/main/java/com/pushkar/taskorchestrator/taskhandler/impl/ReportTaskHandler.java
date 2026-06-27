@@ -9,9 +9,12 @@ public class ReportTaskHandler implements TaskHandler {
 
     @Override
     public String handle(Task task) throws Exception {
-        // simulate report generation
-        Thread.sleep(5000);
 
+        if (task.getPayload() != null && task.getPayload().toUpperCase().contains("FAIL")) {
+            throw new RuntimeException("Report generation failed intentionally for testing.");
+        }
+
+        Thread.sleep(5000);
         return "Report generated successfully. Payload: " + task.getPayload();
     }
 }

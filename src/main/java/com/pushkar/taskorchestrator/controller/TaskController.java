@@ -2,6 +2,7 @@ package com.pushkar.taskorchestrator.controller;
 
 import com.pushkar.taskorchestrator.dto.TaskRequest;
 import com.pushkar.taskorchestrator.entity.Task;
+import com.pushkar.taskorchestrator.entity.TaskStatus;
 import com.pushkar.taskorchestrator.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,5 +32,15 @@ public class TaskController {
     @GetMapping
     public ResponseEntity<List<Task>> getAllTasks() {
         return ResponseEntity.ok(taskService.getAllTasks());
+    }
+
+    @PostMapping("/{id}/retry")
+    public ResponseEntity<Task> retryTask(@PathVariable Long id) {
+        return ResponseEntity.ok(taskService.retryTask(id));
+    }
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<Task>> getTasksByStatus(@PathVariable TaskStatus status) {
+        return ResponseEntity.ok(taskService.getTasksByStatus(status));
     }
 }

@@ -9,9 +9,12 @@ public class EmailTaskHandler implements TaskHandler {
 
     @Override
     public String handle(Task task) throws Exception {
-        // simulate email sending
-        Thread.sleep(3000);
 
+        if (task.getPayload() != null && task.getPayload().toUpperCase().contains("FAIL")) {
+            throw new RuntimeException("Email task failed intentionally for testing.");
+        }
+
+        Thread.sleep(3000);
         return "Email task completed successfully. Payload: " + task.getPayload();
     }
 }

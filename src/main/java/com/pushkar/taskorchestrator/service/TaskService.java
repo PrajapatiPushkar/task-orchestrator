@@ -17,6 +17,8 @@ import java.util.concurrent.ExecutorService;
 @RequiredArgsConstructor
 public class TaskService {
 
+    private static final int MAX_RETRY_COUNT = 3;
+
     private final TaskRepository taskRepository;
     private final ExecutorService executorService;
     private final TaskHandlerFactory taskHandlerFactory;
@@ -45,6 +47,7 @@ public class TaskService {
         try {
             task.setStatus(TaskStatus.RUNNING);
             task.setStartedAt(LocalDateTime.now());
+            task.setErrorMessage(null); // clear previous error before retry
             taskRepository.save(task);
 
             TaskHandler handler = taskHandlerFactory.getHandler(task.getTaskType());
@@ -63,6 +66,32 @@ public class TaskService {
         }
     }
 
+    public Task retryTask(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
+
+        if (task.getStatus() != TaskStatus.FAILED) {
+            throw new RuntimeException("Only FAILED tasks can be retried.");
+        }
+
+        if (task.getRetryCount() >= MAX_RETRY_COUNT) {
+            throw new RuntimeException("Retry limit exceeded for task id: " + taskId);
+        }
+
+        task.setRetryCount(task.getRetryCount() + 1);
+        task.setStatus(TaskStatus.RETRYING);
+        task.setStartedAt(null);
+        task.setCompletedAt(null);
+        task.setResult(null);
+        task.setErrorMessage(null);
+
+        Task updatedTask = taskRepository.save(task);
+
+        executorService.submit(() -> executeTask(updatedTask.getId()));
+
+        return updatedTask;
+    }
+
     public Task getTaskById(Long id) {
         return taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
@@ -70,5 +99,9 @@ public class TaskService {
 
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
+    }
+
+    public List<Task> getTasksByStatus(TaskStatus status) {
+        return taskRepository.findByStatus(status);
     }
 }

@@ -9,9 +9,12 @@ public class ApiSyncTaskHandler implements TaskHandler {
 
     @Override
     public String handle(Task task) throws Exception {
-        // simulate external API sync
-        Thread.sleep(4000);
 
+        if (task.getPayload() != null && task.getPayload().toUpperCase().contains("FAIL")) {
+            throw new RuntimeException("API sync failed intentionally for testing.");
+        }
+
+        Thread.sleep(4000);
         return "API sync completed successfully. Payload: " + task.getPayload();
     }
 }
