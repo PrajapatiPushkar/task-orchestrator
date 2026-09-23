@@ -79,7 +79,7 @@ public class TaskService {
             throw new RuntimeException("Only FAILED tasks can be retried.");
         }
 
-        if (task.getRetryCount() >= MAX_RETRY_COUNT) {
+        if (task.getRetryCount() > MAX_RETRY_COUNT) {
             throw new RuntimeException("Retry limit exceeded for task id: " + taskId);
         }
 
